@@ -1,0 +1,9 @@
+{
+  "commands": [
+    {
+      "command": "/cmd",
+      "team_domain": "domain",
+      "signing_secret": "secret"
+    }
+  ]
+}
