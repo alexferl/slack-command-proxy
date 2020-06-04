@@ -30,20 +30,24 @@ func (e *oldTimeStampError) Error() string {
 // verifyRequest verifies the request signature.
 // See https://api.slack.com/docs/verifying-requests-from-slack.
 func verifyRequest(r *http.Request, slackSigningSecret string) (bool, error) {
-	timeStamp := r.Header.Get(slackRequestTimestampHeader)
+	timestamp := r.Header.Get(slackRequestTimestampHeader)
 	slackSignature := r.Header.Get(slackSignatureHeader)
 
-	t, err := strconv.ParseInt(timeStamp, 10, 64)
+	if timestamp == "" {
+		return false, fmt.Errorf("header '%s' is required", slackRequestTimestampHeader)
+	}
+
+	if slackSignature == "" {
+		return false, fmt.Errorf("header '%s' is required", slackSignatureHeader)
+	}
+
+	t, err := strconv.ParseInt(timestamp, 10, 64)
 	if err != nil {
-		return false, fmt.Errorf("strconv.ParseInt(%s): %v", timeStamp, err)
+		return false, fmt.Errorf("strconv.ParseInt(%s): %v", timestamp, err)
 	}
 
 	if ageOk, age := checkTimestamp(t); !ageOk {
 		return false, &oldTimeStampError{fmt.Sprintf("checkTimestamp(%v): %v %v", t, ageOk, age)}
-	}
-
-	if timeStamp == "" || slackSignature == "" {
-		return false, fmt.Errorf("either timeStamp or signature headers were blank")
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -54,7 +58,7 @@ func verifyRequest(r *http.Request, slackSigningSecret string) (bool, error) {
 	// Reset the body so other calls won't fail.
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-	baseString := fmt.Sprintf("%s:%s:%s", version, timeStamp, body)
+	baseString := fmt.Sprintf("%s:%s:%s", version, timestamp, body)
 
 	signature := getSignature([]byte(baseString), []byte(slackSigningSecret))
 

@@ -20,11 +20,12 @@ type Payload struct {
 	TeamDomain    string `json:"team_domain"`
 	TeamId        string `json:"team_id"`
 	Text          string `json:"text"`
-	Token         string `json:"token"`
+	Token         string `json:"-"`
 	TriggerId     string `json:"trigger_id"`
 	UserId        string `json:"user_id"`
 	UserName      string `json:"user_name"`
 	ParsedCommand string `json:"-"`
+	Trace         string `json:"_trace"`
 }
 
 func (p *Payload) Bytes() []byte {
@@ -42,7 +43,7 @@ func newPayload(form url.Values) *Payload {
 
 	err := json.Unmarshal(b, &p)
 	if err != nil {
-		log.Fatalf("newPayload().json.Unmarshall(%v, %v): %v", b, p, err)
+		log.Fatalf("newPayload(%v).json.Unmarshall(%v, %v): %v", form, b, p, err)
 	}
 
 	p.ParsedCommand = strings.ReplaceAll(p.Command, "/", "")
@@ -60,7 +61,7 @@ func formToJSONBytes(form url.Values) []byte {
 
 	b, err := json.Marshal(m)
 	if err != nil {
-		log.Fatalf("newPayload().json.Marshall(%v): %v", m, err)
+		log.Fatalf("formToJSONBytes(%v).json.Marshall(%v): %v", form, m, err)
 	}
 
 	return b
