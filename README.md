@@ -10,8 +10,14 @@ git clone https://github.com/admiralobvious/slack-command-proxy
 cd slack-command-proxy
 ```
 
-Modify `config.json` with your own settings.
+1. Modify `config.json` with your own settings.
 
+2. Create a Pub/Sub topic following this pattern:
+```shell script
+gcloud pubsub topics create slack-command-proxy-myteam-mycommand
+```
+
+3. Deploy Slack Command Proxy:
 ```shell script
 gcloud functions deploy SlackCommandProxy --runtime go113 --trigger-http --set-env-vars "GCP_PROJECT=your-project-id" --allow-unauthenticated
 ```
